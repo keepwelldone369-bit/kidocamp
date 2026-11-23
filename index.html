@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self';">
+<title>KidoCamp - Play. Build. Explore!</title>
+<style>
+  :root { --sun: #FFD166; --sea: #118AB2; --grass: #06D6A0; --orange: #F77F00; --bg: #FFFDF7; --dark: #1D3557; }
+  * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; font-family: sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--dark); display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+  header { width: 100%; background: var(--sea); color: #fff; padding: 15px; text-align: center; border-radius: 0 0 25px 25px; }
+  .logo-box { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(255,255,255,0.15); padding: 8px 18px; border-radius: 50px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--sun); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid var(--orange); }
+  h1 { margin: 0; font-size: 22px; }
+  .slogan { font-size: 12px; color: var(--sun); font-weight: bold; margin-top: 4px; letter-spacing: 1px; }
+  .arena { width: 92%; max-width: 450px; background: #fff; margin-top: 20px; border-radius: 24px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 3px solid var(--sun); text-align: center; }
+  .badge { display: inline-block; background: var(--grass); color: #fff; padding: 5px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; margin-bottom: 10px; }
+  .stage { width: 100%; height: 180px; background: #E0F7FA; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed var(--sea); margin-bottom: 15px; }
+  .emoji { font-size: 64px; transition: transform 0.2s; }
+  .bar { width: 85%; height: 16px; background: #E9ECEF; border-radius: 10px; overflow: hidden; margin: 12px auto 0; border: 2px solid var(--dark); }
+  .fill { width: 0%; height: 100%; background: var(--orange); transition: width 0.2s; }
+  .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+  .btn { background: var(--sun); border: 3px solid var(--orange); border-radius: 18px; padding: 14px 5px; font-size: 28px; cursor: pointer; box-shadow: 0 4px 0 var(--orange); }
+  .btn:active { transform: translateY(4px); box-shadow: none; }
+  .score { margin-top: 18px; background: var(--dark); color: var(--sun); padding: 8px 20px; border-radius: 50px; font-weight: bold; display: inline-flex; gap: 8px; }
+  #vault { display: none; width: 92%; max-width: 450px; background: var(--dark); color: #fff; margin-top: 20px; border-radius: 20px; padding: 20px; border: 3px solid var(--grass); }
+  .v-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px; }
+  .v-in { width: 100%; padding: 10px; border-radius: 10px; border: none; margin-top: 5px; }
+  .v-btn { width: 100%; padding: 12px; background: var(--grass); color: var(--dark); font-weight: bold; border: none; border-radius: 12px; margin-top: 10px; cursor: pointer; }
+  .idea { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; margin-top: 12px; font-size: 13px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-box" id="logoBtn"><div class="logo-icon">⛺</div><h1>KidoCamp</h1></div>
+  <div class="slogan">PLAY • BUILD • EXPLORE</div>
+</header>
+<div class="arena">
+  <div class="badge" id="env">🏜️ DESERT CAMP</div>
+  <div class="stage" id="stage"><div class="emoji" id="emo">🌬️⛺</div><div class="bar"><div class="fill" id="fill"></div></div></div>
+  <div class="tools" id="tools"></div>
+  <div class="score">⭐ <span id="stars">0</span></div>
+</div>
+<div id="vault">
+  <h2 style="margin-top:0;color:var(--sun);font-size:18px;">🔐 غرفة تحكم المالك (KidoCamp)</h2>
+  <div class="v-row"><span>إجمالي الأرباح (ج.م):</span><strong id="totP">0</strong></div>
+  <div class="v-row" style="color:var(--grass);"><span>فودافون كاش (50%):</span><strong id="withP">0</strong></div>
+  <div class="v-row" style="color:var(--sun);"><span>إعادة استثمار (50%):</span><strong id="reinP">0</strong></div>
+  <input type="number" id="inP" class="v-in" placeholder="أضف ربح اليوم (جنيه)...">
+  <button class="v-btn" onclick="addP()">تحديث وتقسيم الأرباح</button>
+  <button class="v-btn" style="background:var(--sun);" onclick="genHook()">🎬 توليد فكرة فيديو (Hook)</button>
+  <div class="idea" id="hookOut">اضغط لتوليد فكرة فيديو أطفال صامت...</div>
+  <button class="v-btn" style="background:#E63946;color:#fff;" onclick="document.getElementById('vault').style.display='none'">إغلاق</button>
+</div>
+<script>
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  function tone(f, t, d) {
+    if (ctx.state === 'suspended') ctx.resume();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = t; o.frequency.setValueAtTime(f, ctx.currentTime);
+    g.gain.setValueAtTime(0.15, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d);
+  }
+  const missions = [
+    { env: "🏜️ DESERT CAMP", p: "🌬️⛺", f: "⛺🔥✨", ok: "🔨", t: ["🔨", "🍦", "🎈"], bg: "#FFF3CD" },
+    { env: "🌊 SEA RESCUE", p: "🚤💧", f: "⛵🐬✨", ok: "🪵", t: ["🧸", "🪵", "🍕"], bg: "#D1ECF1" },
+    { env: "🌲 FOREST CRAFT", p: "🌉❌", f: "🌉🐿️✨", ok: "🪚", t: ["🪚", "🎨", "⚽"], bg: "#D4EDDA" },
+    { env: "🚜 FARM SKILL", p: "🌱☀️", f: "🌻🍎✨", ok: "🚿", t: ["🎸", "🚿", "📚"], bg: "#E2F0CB" }
+  ];
+  let idx = 0, prog = 0, stars = parseInt(localStorage.getItem('kc_s') || '0');
+  document.getElementById('stars').innerText = stars;
+  function load() {
+    const m = missions[idx]; prog = 0;
+    document.getElementById('env').innerText = m.env;
+    document.getElementById('stage').style.backgroundColor = m.bg;
+    document.getElementById('emo').innerText = m.p;
+    document.getElementById('fill').style.width = '0%';
+    const box = document.getElementById('tools'); box.innerHTML = '';
+    m.t.forEach(tool => {
+      const b = document.createElement('button'); b.className = 'btn'; b.innerText = tool;
+      b.onclick = () => tap(tool, m); box.appendChild(b);
+    });
+  }
+  function tap(tool, m) {
+    const e = document.getElementById('emo');
+    if (tool === m.ok) {
+      prog += 50; tone(520 + prog * 3, 'sine', 0.2); e.style.transform = 'scale(1.25)';
+      setTimeout(() => e.style.transform = 'scale(1)', 150);
+      document.getElementById('fill').style.width = prog + '%';
+      if (prog >= 100) {
+        e.innerText = m.f; tone(880, 'triangle', 0.4); stars++;
+        localStorage.setItem('kc_s', stars); document.getElementById('stars').innerText = stars;
+        setTimeout(() => { idx = (idx + 1) % missions.length; load(); }, 1200);
+      }
+    } else {
+      tone(180, 'sawtooth', 0.25); e.style.transform = 'rotate(12deg)';
+      setTimeout(() => e.style.transform = 'rotate(0deg)', 150);
+    }
+  }
+  let taps = 0, tm;
+  document.getElementById('logoBtn').onclick = () => {
+    taps++; clearTimeout(tm); tm = setTimeout(() => taps = 0, 1500);
+    if (taps >= 5) { taps = 0; if (prompt("PIN:") === "2026") { document.getElementById('vault').style.display = 'block'; showP(); } }
+  };
+  function showP() {
+    const t = parseFloat(localStorage.getItem('kc_p') || '0');
+    document.getElementById('totP').innerText = t.toFixed(2);
+    document.getElementById('withP').innerText = (t * 0.5).toFixed(2);
+    document.getElementById('reinP').innerText = (t * 0.5).toFixed(2);
+  }
+  function addP() {
+    const v = parseFloat(document.getElementById('inP').value);
+    if (!isNaN(v) && v > 0) {
+      localStorage.setItem('kc_p', (parseFloat(localStorage.getItem('kc_p') || '0') + v).toString());
+      document.getElementById('inP').value = ''; showP();
+    }
+  }
+  const hooks = [
+    "🎣 قارب صغير يغرق ويتم إصلاحه بقطعة خشب ومطرقة في 10 ثوانٍ بأصوات ASMR مبهجة.",
+    "🏜️ عاصفة رملية تطير الخيمة الصفراء والطفل يثبتها بالأوتاد والحبال بذكاء.",
+    "🌉 أرنب لطيف يبني جسراً خشبياً للعبور إلى حقل الجزر بأدوات النجارة.",
+    "🌱 بذرة صغيرة في أرض جافة تتحول لشجرة تفاح مبهجة بالماء والشمس."
+  ];
+  function genHook() { document.getElementById('hookOut').innerText = hooks[Math.floor(Math.random() * hooks.length)]; }
+  load();
+</script>
+</body>
+</html>
