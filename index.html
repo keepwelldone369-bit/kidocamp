@@ -40,7 +40,11 @@
 <script>
 const c = document.getElementById('c'), ctx = c.getContext('2d');
 let W, H;
-function resize() { W = c.width = document.getElementById('app').clientWidth; H = c.height = document.getElementById('app').clientHeight; }
+function resize() {
+  const el = document.getElementById('app');
+  W = c.width = el.clientWidth || window.innerWidth;
+  H = c.height = el.clientHeight || window.innerHeight;
+}
 window.addEventListener('resize', resize); resize();
 
 const actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -125,7 +129,7 @@ function drawSceneObject() {
   if (hookFlash > 0) hookFlash--;
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 4; ctx.setLineDash([8, 8]);
   ctx.beginPath(); ctx.arc(tx, ty, 60 + Math.sin(frame*0.08)*4, 0, Math.PI*2); ctx.stroke();
   ctx.restore();
 
